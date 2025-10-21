@@ -326,44 +326,44 @@ with tabs[4]:  # Sustainability
         "Count":[total_cups, disposables_avoided]
     })
     # Custom coffee-themed color palette
-coffee_colors = ['#6F4E37', '#C0A080', '#A67B5B', '#8B5A2B', '#D2B48C']
+    coffee_colors = ['#6F4E37', '#C0A080', '#A67B5B', '#8B5A2B', '#D2B48C']
 
-fig = px.bar(
-    df,
-    x="Metric",
-    y="Count",
-    text="Count",
-    color="Metric",
-    color_discrete_sequence=coffee_colors,
-)
-
-# Beautify layout to match café theme
-fig.update_layout(
-    plot_bgcolor='rgba(0,0,0,0)',
-    paper_bgcolor='rgba(0,0,0,0)',
-    font=dict(color="#f8f5f2", family="sans-serif"),
-    showlegend=False,
-    xaxis=dict(
-        showgrid=False,
-        linecolor="#5b4636",
-        tickfont=dict(size=14)
-    ),
-    yaxis=dict(
-        gridcolor="rgba(91,70,54,0.25)",
-        zerolinecolor="#8b6b52",
-        title=None
-    ),
-    margin=dict(t=20, b=20, l=10, r=10)
-)
-
-fig.update_traces(
-    textposition="outside",
-    marker_line_color="#3e2723",
-    marker_line_width=1.2
-)
-
-st.plotly_chart(fig, use_container_width=True)
-st.caption("Illustrative only — factors vary by material & local recycling.")
+    fig = px.bar(
+        df,
+        x="Metric",
+        y="Count",
+        text="Count",
+        color="Metric",
+        color_discrete_sequence=coffee_colors,
+    )
+    
+    # Beautify layout to match café theme
+    fig.update_layout(
+        plot_bgcolor='rgba(0,0,0,0)',
+        paper_bgcolor='rgba(0,0,0,0)',
+        font=dict(color="#f8f5f2", family="sans-serif"),
+        showlegend=False,
+        xaxis=dict(
+            showgrid=False,
+            linecolor="#5b4636",
+            tickfont=dict(size=14)
+        ),
+        yaxis=dict(
+            gridcolor="rgba(91,70,54,0.25)",
+            zerolinecolor="#8b6b52",
+            title=None
+        ),
+        margin=dict(t=20, b=20, l=10, r=10)
+    )
+    
+    fig.update_traces(
+        textposition="outside",
+        marker_line_color="#3e2723",
+        marker_line_width=1.2
+    )
+    
+    st.plotly_chart(fig, use_container_width=True)
+    st.caption("Illustrative only — factors vary by material & local recycling.")
 
 with tabs[5]:  # Contact
     st.subheader("Say hello 👋")
