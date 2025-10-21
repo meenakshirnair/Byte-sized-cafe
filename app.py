@@ -2,11 +2,10 @@ import streamlit as st
 import pandas as pd
 import plotly.express as px
 from math import ceil
-from textwrap import dedent
 
 st.set_page_config(page_title="Byte-Sized Café ☕", page_icon="☕", layout="wide")
 
-# ===== Styles (coffee gradient + readable cards + story mode) =====
+# ===== Styles (coffee gradient + readable cards + styled tabs) =====
 st.markdown("""
 <style>
 :root{
@@ -65,7 +64,7 @@ hr{ border:0; height:1px; background:#6b4e3a; margin:18px 0 }
 a {color:#facc15 !important; text-decoration:none;}
 a:hover{text-decoration:underline;}
 
-/* Hero banner wrapper (Home page) */
+/* Hero banner wrapper */
 .hero{
   position:relative; overflow:hidden; border-radius:22px;
   border:1px solid var(--border); margin: 8px 0 18px 0;
@@ -85,14 +84,23 @@ a:hover{text-decoration:underline;}
   color:#fffdec; text-shadow: 0 2px 10px rgba(0,0,0,.35);
 }
 
-/* Story Mode scroll-snap (for the Streamlit-native story if you ever want it) */
-.story-wrap { scroll-snap-type: y mandatory; height: 85vh; overflow-y: scroll; }
-.story { scroll-snap-align: start; min-height: 85vh; padding: 28px;
-         border:1px solid var(--border); border-radius:22px;
-         background: var(--panel); backdrop-filter: blur(6px);
-         margin-bottom: 16px; display:flex; flex-direction:column; justify-content:center; }
-.story h2 { margin: 0 0 10px 0; }
-.story .sub { opacity:.85; margin-bottom:14px; }
+/* ---- Streamlit tabs styling ---- */
+.stTabs [data-baseweb="tab-list"]{
+  gap: 6px;
+}
+.stTabs [data-baseweb="tab"]{
+  height: 42px;
+  background: rgba(30,22,18,0.55);
+  border: 1px solid var(--border);
+  border-bottom: 1px solid #8b6b52;
+  border-radius: 999px;
+  padding: 8px 16px;
+}
+.stTabs [aria-selected="true"]{
+  background: linear-gradient(90deg, rgba(245,158,11,.35), rgba(245,158,11,.15));
+  border: 1px solid #caa36d !important;
+  color: #fff5da !important;
+}
 </style>
 """, unsafe_allow_html=True)
 
@@ -124,18 +132,15 @@ def drink_icon(name: str) -> str:
     if "cold brew" in n: return "🧊"
     return "☕"
 
-# ===== Sidebar nav =====
-page = st.sidebar.radio(
-    "Navigate",
-    ["Home","Menu","Build Your Drink","Budget Planner","Sustainability","Story Mode","Contact"]
-)
+# ===== Top navigation tabs (replaces sidebar radio) =====
+tabs = st.tabs(["🏠 Home", "🧾 Menu", "🧪 Build Your Drink", "💰 Budget Planner", "🌱 Sustainability", "✉️ Contact"])
 
 # ==================== Pages ====================
 
-if page == "Home":
+with tabs[0]:  # Home
     st.markdown("<div class='big'>Byte-Sized Café ☕</div>", unsafe_allow_html=True)
 
-    # Hero banner with the café image (not background, for readability)
+    # Hero banner with café photo
     st.markdown("""
     <div class="hero">
       <img src="https://images.unsplash.com/photo-1511920170033-f8396924c348?auto=format&fit=crop&w=1600&q=80" alt="Cafe ambience"/>
@@ -174,7 +179,7 @@ Explore the menu, build your perfect drink, plan your coffee budget, and peek at
     fig.update_traces(textposition="top center")
     st.plotly_chart(fig, use_container_width=True)
 
-elif page == "Menu":
+with tabs[1]:  # Menu
     st.subheader("Our Menu")
 
     # Controls
@@ -253,7 +258,7 @@ elif page == "Menu":
             st.markdown("</div>", unsafe_allow_html=True)
         st.markdown("</div>", unsafe_allow_html=True)
 
-elif page == "Build Your Drink":
+with tabs[2]:  # Build Your Drink
     st.subheader("Customize your drink")
     base = st.selectbox("Base drink", menu.Drink)
     chosen = menu.set_index("Drink").loc[base].to_dict()
@@ -282,7 +287,7 @@ elif page == "Build Your Drink":
     c3.metric("Calories", f"{total_cal} kcal")
     st.caption("Tip: Screenshot this card for your order 😄")
 
-elif page == "Budget Planner":
+with tabs[3]:  # Budget Planner
     st.subheader("How much do you spend on coffee?")
     freq = st.slider("Cups per week", 0, 21, 7)
     avg_price = st.slider("Avg price per cup ($)", 1.0, 10.0, float(menu.Price.mean()), 0.1)
@@ -301,7 +306,7 @@ elif page == "Budget Planner":
     saved = (avg_price - alt_price) * switch * weeks
     st.success(f"Potential savings: **${saved:.2f}** over {weeks} weeks")
 
-elif page == "Sustainability":
+with tabs[4]:  # Sustainability
     st.subheader("Small habits, big impact 🌎")
     cups = st.slider("Cups you drink per week", 0, 21, 7)
     reusable_rate = st.slider("Reusable cup adoption", 0, 100, 40) / 100
@@ -324,77 +329,7 @@ elif page == "Sustainability":
     st.plotly_chart(fig, use_container_width=True)
     st.caption("Illustrative only — factors vary by material & local recycling.")
 
-elif page == "Story Mode":
-    st.subheader("Story Mode 🎬 — Prezi-style inside Streamlit")
-
-    # Embed a minimal impress.js deck (zoom/pan between steps)
-    html = dedent("""
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/impress.js/0.5.3/impress-demo.css">
-    <style>
-      #impress { height: 80vh; }
-      .step {
-        background: rgba(20,20,20,0.55);
-        color: #f8fafc; border-radius: 16px; padding: 24px;
-        border: 1px solid rgba(255,255,255,.15);
-        box-shadow: 0 10px 30px rgba(0,0,0,.35);
-      }
-      .kpi { font-size: 2rem; font-weight: 800; letter-spacing: .5px; }
-      a { color: #facc15; text-decoration: none; }
-      a:hover { text-decoration: underline; }
-      body { background: transparent; }
-    </style>
-
-    <div id="impress">
-
-      <!-- Slide 1: Hero -->
-      <div id="intro" class="step" data-x="0" data-y="0" data-scale="1.4">
-        <h1>Business Analytics in Action</h1>
-        <p>From data to decisions — a tiny, zoomable tour.</p>
-        <p style="opacity:.8">Use arrow keys or click to advance.</p>
-      </div>
-
-      <!-- Slide 2: KPI cluster -->
-      <div class="step" data-x="1200" data-y="0" data-scale="1">
-        <div class="kpi">91.9% — Attrition Model Accuracy</div>
-        <div class="kpi">100% — SLA via Routing Optimization</div>
-        <div class="kpi">25% — Cycle time reduction</div>
-        <p style="opacity:.85">Metrics that matter to the business.</p>
-      </div>
-
-      <!-- Slide 3: Optimization story -->
-      <div class="step" data-x="1200" data-y="900" data-rotate="5" data-scale="0.9">
-        <h2>Optimization Story</h2>
-        <p>Minimized compute cost while keeping SLA at 100% via linear programming.</p>
-        <ul>
-          <li>Decision variables: route to model backends</li>
-          <li>Constraint: SLA ≥ target</li>
-          <li>Objective: Cost ↓</li>
-        </ul>
-        <p><a href="https://github.com/meenakshirnair" target="_blank">View code on GitHub ↗</a></p>
-      </div>
-
-      <!-- Slide 4: Forecasting -->
-      <div class="step" data-x="-800" data-y="600" data-rotate="-5" data-scale="1.2">
-        <h2>Forecasting Snapshot</h2>
-        <p>R² 0.81 rent prediction with explainable features.</p>
-        <blockquote style="opacity:.9">“Great coffee is an experience — and so is great data.”</blockquote>
-      </div>
-
-      <!-- Slide 5: Wrap -->
-      <div class="step" data-x="0" data-y="1400" data-scale="1.3">
-        <h2>Thanks!</h2>
-        <p>Want the full portfolio? Jump back to the site, or reach me any time.</p>
-        <p><a href="mailto:meenakshirnair712@gmail.com">meenakshirnair712@gmail.com</a></p>
-      </div>
-    </div>
-
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/impress.js/0.5.3/impress.min.js"></script>
-    <script>impress().init();</script>
-    """)
-
-    st.components.v1.html(html, height=700, scrolling=False)
-
-elif page == "Contact":
+with tabs[5]:  # Contact
     st.subheader("Say hello 👋")
     st.write("""
 Thanks for visiting **Byte-Sized Café** — a little experiment that blends storytelling, design, and data analytics.  
